@@ -5,38 +5,46 @@ project(daemon
         DESCRIPTION "Simple daemon to get CPU ussage and RAM"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "") # works
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 add_executable(server)
 add_executable(client)
 
+add_library(asio INTERFACE)
+# target_compile_options(asio INTERFACE ASIO_STANDALONE)
+target_include_directories(asio INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/lib/asio-1.30.2/include)
+
+
 target_sources(
     server
   PRIVATE
-    # server.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TCPserver.cpp
-  )
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/TCPconnection.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
+)
+target_include_directories(
+    server
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+)
+target_link_libraries(
+      server
+      asio
+)
 
 target_sources(
     client
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TCPclient.cpp
-    )
-target_include_directories(
-    server
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
-  )
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/client.cpp
+)
 target_include_directories(
     client
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/inc
-  )
+)
+target_link_libraries(
+      client
+      asio
+)
+
