@@ -11,6 +11,7 @@ inline std::string calculateCPU() {
   return line;
 }
 inline std::string calculateRAM() {
+  // TODO:Properly parse all the lines to read memtotal, memfree, buffers, cached
   // TODO: compute the usage like: MemTotal - MemFree - Buffers - Cached
   std::ifstream filestat("/proc/meminfo");
   std::string line;
