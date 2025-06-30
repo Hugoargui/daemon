@@ -4,14 +4,15 @@
 #include <iostream>
 #include <string>
 #include "asio/streambuf.hpp"
+#include "cpu_ram_calculator.hpp"
 
 std::string createResponse(const std::string& command) {
   if (command == "ram") {
-    return "THIS IS MY RAM";
+    return calculateRAM();
   } else if (command == "cpu") {
-    return "THIS IS MY CPU";
+    return calculateCPU();
   } else {
-    return "unknown command";
+    return "Unknown command";
   }
 }
 
@@ -24,19 +25,23 @@ void TCPconnection::handle_client() {
 
   while (true) {
 
-    // std::cout << "received connection from client" << std::endl;
-
     asio::streambuf received_data;
-    // std::cout << "waiting to read data from client" << std::endl;
-    asio::read_until(m_socket, received_data, "\n");
-    // std::cout << "received some data" << std::endl;
+    // TODO: make this async
+    std::error_code ec;
+    auto result = asio::read_until(m_socket, received_data, "\n", ec);
+
+    // To gracefully handle client disconnection
+    if (ec == asio::error::eof) {
+      break;
+    } else if (ec) {
+      throw std::runtime_error("client terminated abnormally");
+    }
+
     std::istream input(&received_data);
     std::string received_command;
     std::getline(input, received_command);
-    // std::cout << "received data: " << received_command << std::endl;
 
     m_message = createResponse(received_command);
-    std::cout << "sending response " << m_message << std::endl;
     asio::async_write(m_socket, asio::buffer(m_message),
                       std::bind(&TCPconnection::handle_write,
                                 shared_from_this(), asio::placeholders::error,
@@ -45,6 +50,4 @@ void TCPconnection::handle_client() {
 }
 
 void TCPconnection::handle_write(const std::error_code& error,
-                                 size_t bytes_transferred) {
-  std::cout << "inside handle write";
-}
+                                 size_t bytes_transferred) {}

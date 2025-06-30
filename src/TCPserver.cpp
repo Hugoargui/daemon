@@ -21,6 +21,9 @@ void TCPserver::handle_accept(std::shared_ptr<TCPconnection> new_connection,
                               const std::error_code& error) {
   if (!error) {
     new_connection->handle_client();
+    // TODO: here we enter infinite loop so we can't handle more than one client.
+    // Use either detached threads per client (assmuning we won't have many clients)
+    // Or go the async way and have just a vector of clients and handle them in non blocking way
   }
 
   this->start_accept();
