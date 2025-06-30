@@ -20,7 +20,7 @@ void TCPserver::start_accept() {
 void TCPserver::handle_accept(std::shared_ptr<TCPconnection> new_connection,
                               const std::error_code& error) {
   if (!error) {
-    new_connection->start();
+    new_connection->handle_client();
   }
 
   this->start_accept();
